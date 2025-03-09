@@ -1,0 +1,40 @@
+apiVersion: 2019-12-01
+type: Microsoft.ContainerInstance/containerGroups
+name: github-web-container
+location: eastus
+properties:
+  containers:
+  - name: nginx
+    properties:
+      image: nginx:alpine  # Basic nginx image from Docker Hub
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+      ports:
+      - port: 80
+      volumeMounts:
+      - name: website-content
+        mountPath: /usr/share/nginx/html
+  initContainers:
+  - name: git-clone
+    properties:
+      image: alpine/git  # Git container to clone repository
+      command:
+      - git
+      - clone
+      - https://github.com/bdkcomp/azure-webapp-demo.git
+      - /website
+      volumeMounts:
+      - name: website-content
+        mountPath: /website
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: TCP
+      port: 80
+    dnsNameLabel: github-web-hackeru
+  volumes:
+  - name: website-content
+    emptyDir: {}
